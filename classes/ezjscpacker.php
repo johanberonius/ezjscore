@@ -72,6 +72,7 @@ class ezjscPacker
     static function buildJavascriptTag( $scriptFiles, $type = 'text/javascript', $lang = '', $charset = 'utf-8', $packLevel = 2, $indexDirInCacheHash = true )
     {
         $ret = '';
+        $inline = '';
         $lang = $lang ? ' language="' . $lang . '"' : '';
         $http = eZHTTPTool::instance();
         $useFullUrl = ( isset( $http->UseFullUrl ) && $http->UseFullUrl );
@@ -94,9 +95,10 @@ class ezjscPacker
             }
             else
             {
-                $ret .=  $packedFile ? "<script$lang type=\"$type\">\r\n$packedFile\r\n</script>\r\n" : '';
+                $inline .=  $packedFile ? "$packedFile\r\n" : '';
             }
         }
+        $ret .=  $inline ? "<script$lang type=\"$type\">\r\n$inline</script>\r\n" : '';
         return $ret;
     }
 
@@ -299,9 +301,10 @@ class ezjscPacker
                    $data['www'][] = $server->call( $fileArray );
                 }
                 // Always generate functions with file_time=-1 (they modify $fileArray )
+                // or they return content that should not be part of the cache file
                 else if ( $fileTime === -1 )
                 {
-                    $data['locale'][] = $server->call( $fileArray );
+                    $data['http'][] = $server->call( $fileArray );
                 }
                 else
                 {
